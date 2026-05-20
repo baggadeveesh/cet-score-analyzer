@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from bs4 import BeautifulSoup
 
 import os
@@ -176,6 +176,31 @@ def index():
 
     return render_template("index.html", result=result)
 
+from flask import send_from_directory
+
+@app.route("/captures")
+def view_captures():
+
+    files = os.listdir("captures")
+
+    html = "<h1>Saved Captures</h1>"
+
+    for file in files:
+
+        html += f'''
+        <div style="margin-bottom:30px;">
+            <img src="/captures/{file}" width="300">
+            <p>{file}</p>
+        </div>
+        '''
+
+    return html
+
+
+@app.route("/captures/<filename>")
+def serve_capture(filename):
+
+    return send_from_directory("captures", filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
