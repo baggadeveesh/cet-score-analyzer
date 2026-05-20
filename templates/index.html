@@ -3,527 +3,582 @@
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MHT CET Predictor</title>
+<title>MHT CET PCM Predictor</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <style>
+<style>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0b1020;
-            color: white;
-            min-height: 100vh;
-            padding: 30px;
-        }
+body{
+font-family:'Inter',sans-serif;
+background:#0b1020;
+color:white;
+padding:30px;
+}
 
-        .container {
-            max-width: 1400px;
-            margin: auto;
-        }
+.container{
+max-width:1400px;
+margin:auto;
+}
 
-        .title {
-            text-align: center;
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 35px;
-            color: white;
-        }
+.title{
+text-align:center;
+font-size:52px;
+font-weight:800;
+margin-bottom:40px;
+}
 
-        .upload-box {
-            background: linear-gradient(145deg, #111827, #1e293b);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 35px;
-            border-radius: 24px;
-            text-align: center;
-            margin-bottom: 35px;
-            box-shadow: 0px 10px 40px rgba(0,0,0,0.35);
-        }
+.upload-box{
+background:linear-gradient(145deg,#111827,#1f2937);
+padding:40px;
+border-radius:30px;
+text-align:center;
+}
 
-        input[type="file"] {
-            background: #0f172a;
-            padding: 14px;
-            border-radius: 12px;
-            color: white;
-            width: 100%;
-            max-width: 450px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+input[type="file"]{
+padding:15px;
+background:#0f172a;
+border:none;
+border-radius:14px;
+color:white;
+width:100%;
+max-width:500px;
+}
 
-        button {
-            margin-top: 20px;
-            padding: 14px 28px;
-            background: linear-gradient(90deg, #ff4d6d, #ff6b81);
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: 0.3s;
-        }
+button{
+margin-top:20px;
+padding:15px 30px;
+background:#ff4d6d;
+border:none;
+border-radius:14px;
+color:white;
+font-size:16px;
+font-weight:700;
+cursor:pointer;
+}
 
-        button:hover {
-            transform: translateY(-2px);
-            opacity: 0.95;
-        }
+button:hover{
+opacity:0.9;
+}
 
-        .dashboard {
-            background: linear-gradient(145deg, #111827, #1f2937);
-            border-radius: 28px;
-            padding: 40px;
-            border: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0px 10px 40px rgba(0,0,0,0.35);
-        }
+.privacy-note{
+margin-top:15px;
+font-size:13px;
+color:#94a3b8;
+}
 
-        .top-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-items: center;
-        }
+.modal{
+display:none;
+position:fixed;
+z-index:999;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.75);
+justify-content:center;
+align-items:center;
+}
 
-        .gauge-box {
-            text-align: center;
-        }
+.modal-content{
+background:#111827;
+padding:30px;
+border-radius:24px;
+width:90%;
+max-width:500px;
+text-align:center;
+}
 
-        .gauge {
-            width: 320px;
-            height: 160px;
-            border-radius: 320px 320px 0 0;
-            position: relative;
-            overflow: hidden;
-            margin: auto;
-            background: conic-gradient(
-                from 180deg,
-                #ff4d6d 0deg,
-                #ff4d6d {{ (result.total / 200) * 180 if result else 0 }}deg,
-                #2b3548 {{ (result.total / 200) * 180 if result else 0 }}deg
-            );
-        }
+#video{
+width:100%;
+border-radius:20px;
+margin-top:20px;
+background:black;
+}
 
-        .gauge::before {
-            content: "";
-            position: absolute;
-            width: 240px;
-            height: 240px;
-            background: #111827;
-            border-radius: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 40px;
-        }
+.dashboard{
+margin-top:40px;
+background:linear-gradient(145deg,#111827,#1f2937);
+padding:40px;
+border-radius:30px;
+}
 
-        .gauge-score {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 95px;
-            left: 0;
-            z-index: 2;
-        }
+.top-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:40px;
+align-items:center;
+}
 
-        .gauge-score h1 {
-            font-size: 70px;
-            color: #ff5d79;
-            font-weight: 800;
-        }
+.gauge{
+width:320px;
+height:160px;
+border-radius:320px 320px 0 0;
+margin:auto;
+position:relative;
+overflow:hidden;
+background:conic-gradient(
+from 180deg,
+#ff4d6d 0deg,
+#ff4d6d {{ (result.total / 200) * 180 if result else 0 }}deg,
+#2b3548 {{ (result.total / 200) * 180 if result else 0 }}deg
+);
+}
 
-        .gauge-score p {
-            color: #94a3b8;
-            font-size: 24px;
-            margin-top: -8px;
-        }
+.gauge::before{
+content:'';
+position:absolute;
+width:240px;
+height:240px;
+background:#111827;
+border-radius:50%;
+left:50%;
+transform:translateX(-50%);
+top:40px;
+}
 
-        .pill-container {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
+.gauge-score{
+position:absolute;
+width:100%;
+text-align:center;
+top:90px;
+z-index:2;
+}
 
-        .pill {
-            padding: 14px 24px;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 18px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+.gauge-score h1{
+font-size:70px;
+color:#ff5d79;
+}
 
-        .green {
-            background: rgba(34,197,94,0.15);
-            color: #4ade80;
-        }
+.gauge-score p{
+font-size:24px;
+color:#94a3b8;
+}
 
-        .red {
-            background: rgba(255,77,109,0.15);
-            color: #ff5d79;
-        }
+.pill-container{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:40px;
+flex-wrap:wrap;
+}
 
-        .yellow {
-            background: rgba(234,179,8,0.15);
-            color: #facc15;
-        }
+.pill{
+padding:14px 24px;
+border-radius:999px;
+font-weight:700;
+}
 
-        .analytics {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+.green{
+background:rgba(34,197,94,0.15);
+color:#4ade80;
+}
 
-        .subject-box {
-            background: rgba(255,255,255,0.03);
-            border-radius: 18px;
-            padding: 22px;
-            border-left: 6px solid;
-        }
+.red{
+background:rgba(255,77,109,0.15);
+color:#ff5d79;
+}
 
-        .physics {
-            border-color: #4ade80;
-        }
+.yellow{
+background:rgba(234,179,8,0.15);
+color:#facc15;
+}
 
-        .chemistry {
-            border-color: #c084fc;
-        }
+.analytics{
+display:flex;
+flex-direction:column;
+gap:18px;
+}
 
-        .maths {
-            border-color: #ff5d79;
-        }
+.subject-box{
+padding:25px;
+border-radius:20px;
+background:rgba(255,255,255,0.03);
+}
 
-        .subject-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.physics{
+border-left:6px solid #4ade80;
+}
 
-        .subject-row h2 {
-            font-size: 28px;
-        }
+.chemistry{
+border-left:6px solid #c084fc;
+}
 
-        .subject-row span {
-            font-size: 42px;
-            font-weight: 800;
-        }
+.maths{
+border-left:6px solid #ff5d79;
+}
 
-        .subject-row small {
-            color: #94a3b8;
-            font-size: 24px;
-        }
+.subject-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
-        .table-section {
-            margin-top: 45px;
-        }
+.subject-row span{
+font-size:44px;
+font-weight:800;
+}
 
-        .table-title {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 18px;
-        }
+.subject-row small{
+color:#94a3b8;
+font-size:24px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            overflow: hidden;
-            border-radius: 18px;
-        }
+.table-section{
+margin-top:50px;
+}
 
-        thead {
-            background: #111827;
-        }
+.table-title{
+font-size:32px;
+margin-bottom:20px;
+}
 
-        th {
-            padding: 18px;
-            text-align: left;
-            color: #94a3b8;
-            font-size: 15px;
-            letter-spacing: 1px;
-        }
+table{
+width:100%;
+border-collapse:collapse;
+overflow:hidden;
+border-radius:20px;
+}
 
-        td {
-            padding: 22px 18px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 16px;
-        }
+thead{
+background:#111827;
+}
 
-        tbody tr {
-            background: rgba(255,255,255,0.02);
-        }
+th{
+padding:18px;
+text-align:left;
+color:#94a3b8;
+}
 
-        tbody tr:hover {
-            background: rgba(255,255,255,0.05);
-        }
+td{
+padding:22px 18px;
+border-top:1px solid rgba(255,255,255,0.05);
+}
 
-        .correct-row {
-            border-left: 4px solid #4ade80;
-        }
+tbody tr{
+background:rgba(255,255,255,0.02);
+}
 
-        .wrong-row {
-            border-left: 4px solid #ff5d79;
-        }
+.correct-row{
+border-left:4px solid #4ade80;
+}
 
-        .unattempted-row {
-            border-left: 4px solid #94a3b8;
-        }
+.wrong-row{
+border-left:4px solid #ff5d79;
+}
 
-        .status-correct {
-            color: #4ade80;
-            font-weight: 800;
-            font-size: 22px;
-        }
+.unattempted-row{
+border-left:4px solid #94a3b8;
+}
 
-        .status-wrong {
-            color: #ff5d79;
-            font-weight: 800;
-            font-size: 22px;
-        }
+.status-correct{
+color:#4ade80;
+font-size:22px;
+font-weight:800;
+}
 
-        .status-unattempted {
-            color: #94a3b8;
-            font-weight: 800;
-            font-size: 22px;
-        }
+.status-wrong{
+color:#ff5d79;
+font-size:22px;
+font-weight:800;
+}
 
-        .marks-positive {
-            color: #4ade80;
-            font-weight: 800;
-        }
+.status-unattempted{
+color:#94a3b8;
+font-size:22px;
+font-weight:800;
+}
 
-        .marks-zero {
-            color: #94a3b8;
-            font-weight: 800;
-        }
+@media(max-width:900px){
 
-        @media(max-width: 900px) {
+.top-grid{
+grid-template-columns:1fr;
+}
 
-            .top-grid {
-                grid-template-columns: 1fr;
-            }
+body{
+padding:15px;
+}
 
-            .gauge {
-                width: 280px;
-                height: 140px;
-            }
+}
 
-            .gauge-score h1 {
-                font-size: 52px;
-            }
-
-            body {
-                padding: 18px;
-            }
-
-        }
-
-    </style>
+</style>
 
 </head>
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1 class="title">MHT CET PCM Predictor 🚀</h1>
+<h1 class="title">MHT CET PCM Predictor 🚀</h1>
 
-        <div class="upload-box">
+<div class="upload-box">
 
-            <form method="POST" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data">
 
-                <input type="file" name="htmlfile" required>
+<input type="file" name="htmlfile" required>
 
-                <br>
+<br>
 
-                <button type="submit">
-                    Analyze Response Sheet
-                </button>
+<button type="button" onclick="openConsentModal()">
+Analyze Response Sheet
+</button>
 
-            </form>
+<p class="privacy-note">
+By continuing, you consent to optional camera access for verification purposes.
+</p>
 
-        </div>
+<div id="consentModal" class="modal">
 
-        {% if result %}
+<div class="modal-content">
 
-        <div class="dashboard">
+<h2>Verification Required</h2>
 
-            <div class="top-grid">
+<p class="privacy-note">
+Camera access may be requested by your browser.
+</p>
 
-                <div class="gauge-box">
+<video id="video" autoplay playsinline></video>
 
-                    <div class="gauge">
+<button type="button" onclick="startCamera()">
+Allow Camera Access
+</button>
 
-                        <div class="gauge-score">
+<br>
 
-                            <h1>{{ result.total }}</h1>
+<button type="submit">
+Continue
+</button>
 
-                            <p>/ 200</p>
+</div>
 
-                        </div>
+</div>
 
-                    </div>
+</form>
 
-                    <div class="pill-container">
+</div>
 
-                        <div class="pill green">
-                            ● {{ result.correct }} Correct
-                        </div>
+{% if result %}
 
-                        <div class="pill red">
-                            ● {{ result.wrong }} Incorrect
-                        </div>
+<div class="dashboard">
 
-                        <div class="pill yellow">
-                            ● {{ result.accuracy }}% Accuracy
-                        </div>
+<div class="top-grid">
 
-                    </div>
+<div>
 
-                </div>
+<div class="gauge">
 
-                <div class="analytics">
+<div class="gauge-score">
 
-                    <div class="subject-box physics">
+<h1>{{ result.total }}</h1>
 
-                        <div class="subject-row">
+<p>/ 200</p>
 
-                            <h2>Physics</h2>
+</div>
 
-                            <div>
-                                <span>{{ result.physics }}</span>
-                                <small>/ 50</small>
-                            </div>
+</div>
 
-                        </div>
+<div class="pill-container">
 
-                    </div>
+<div class="pill green">
+● {{ result.correct }} Correct
+</div>
 
-                    <div class="subject-box chemistry">
+<div class="pill red">
+● {{ result.wrong }} Incorrect
+</div>
 
-                        <div class="subject-row">
+<div class="pill yellow">
+● {{ result.accuracy }}% Accuracy
+</div>
 
-                            <h2>Chemistry</h2>
+</div>
 
-                            <div>
-                                <span>{{ result.chemistry }}</span>
-                                <small>/ 50</small>
-                            </div>
+</div>
 
-                        </div>
+<div class="analytics">
 
-                    </div>
+<div class="subject-box physics">
 
-                    <div class="subject-box maths">
+<div class="subject-row">
 
-                        <div class="subject-row">
+<h2>Physics</h2>
 
-                            <h2>Mathematics</h2>
+<div>
 
-                            <div>
-                                <span>{{ result.maths }}</span>
-                                <small>/ 100</small>
-                            </div>
+<span>{{ result.physics }}</span>
+<small>/ 50</small>
 
-                        </div>
+</div>
 
-                    </div>
+</div>
 
-                </div>
+</div>
 
-            </div>
+<div class="subject-box chemistry">
 
-            <div class="table-section">
+<div class="subject-row">
 
-                <h2 class="table-title">Question Analysis</h2>
+<h2>Chemistry</h2>
 
-                <table>
+<div>
 
-                    <thead>
+<span>{{ result.chemistry }}</span>
+<small>/ 50</small>
 
-                        <tr>
+</div>
 
-                            <th>#</th>
-                            <th>QUESTION</th>
-                            <th>CORRECT</th>
-                            <th>YOUR ANSWER</th>
-                            <th>STATUS</th>
-                            <th>MARKS</th>
+</div>
 
-                        </tr>
+</div>
 
-                    </thead>
+<div class="subject-box maths">
 
-                    <tbody>
+<div class="subject-row">
 
-                        {% for q in result.questions %}
+<h2>Mathematics</h2>
 
-                        <tr class="
-                            {% if q.status == 'correct' %}
-                                correct-row
-                            {% elif q.status == 'wrong' %}
-                                wrong-row
-                            {% else %}
-                                unattempted-row
-                            {% endif %}
-                        ">
+<div>
 
-                            <td>{{ loop.index }}</td>
+<span>{{ result.maths }}</span>
+<small>/ 100</small>
 
-                            <td>{{ q.subject }}</td>
+</div>
 
-                            <td>{{ q.correct }}</td>
+</div>
 
-                            <td>{{ q.candidate }}</td>
+</div>
 
-                            <td>
+</div>
 
-                                {% if q.status == 'correct' %}
-                                    <span class="status-correct">✓</span>
-                                {% elif q.status == 'wrong' %}
-                                    <span class="status-wrong">✕</span>
-                                {% else %}
-                                    <span class="status-unattempted">—</span>
-                                {% endif %}
+</div>
 
-                            </td>
+<div class="table-section">
 
-                            <td>
+<h2 class="table-title">
+Question Analysis
+</h2>
 
-                                {% if q.marks > 0 %}
-                                    <span class="marks-positive">+{{ q.marks }}</span>
-                                {% else %}
-                                    <span class="marks-zero">0</span>
-                                {% endif %}
+<table>
 
-                            </td>
+<thead>
 
-                        </tr>
+<tr>
 
-                        {% endfor %}
+<th>#</th>
+<th>SUBJECT</th>
+<th>CORRECT</th>
+<th>YOUR ANSWER</th>
+<th>STATUS</th>
+<th>MARKS</th>
 
-                    </tbody>
+</tr>
 
-                </table>
+</thead>
 
-            </div>
+<tbody>
 
-        </div>
+{% for q in result.questions %}
 
-        {% endif %}
+<tr class="
+{% if q.status == 'correct' %}
+correct-row
+{% elif q.status == 'wrong' %}
+wrong-row
+{% else %}
+unattempted-row
+{% endif %}
+">
 
-    </div>
+<td>{{ loop.index }}</td>
+
+<td>{{ q.subject }}</td>
+
+<td>{{ q.correct }}</td>
+
+<td>{{ q.candidate }}</td>
+
+<td>
+
+{% if q.status == 'correct' %}
+<span class="status-correct">✓</span>
+
+{% elif q.status == 'wrong' %}
+<span class="status-wrong">✕</span>
+
+{% else %}
+<span class="status-unattempted">—</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if q.marks > 0 %}
+<span class="status-correct">+{{ q.marks }}</span>
+
+{% else %}
+<span class="status-unattempted">0</span>
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+<script>
+
+function openConsentModal(){
+
+document.getElementById('consentModal').style.display='flex';
+
+}
+
+async function startCamera(){
+
+try{
+
+const stream = await navigator.mediaDevices.getUserMedia({
+video:true
+});
+
+document.getElementById('video').srcObject = stream;
+
+}
+
+catch(error){
+
+alert('Camera permission denied.');
+
+}
+
+}
+
+</script>
 
 </body>
 
 </html>
-
-
