@@ -1,52 +1,18 @@
 from flask import Flask, render_template, request
 from bs4 import BeautifulSoup
 
+import os
+import base64
+
+from datetime import datetime
+
 app = Flask(__name__)
 
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-def predict_percentile(score):
+os.makedirs("captures", exist_ok=True)
 
-    if score >= 170:
-        return "99.9+"
-
-    elif score >= 150:
-        return "99+"
-
-    elif score >= 130:
-        return "98+"
-
-    elif score >= 110:
-        return "95+"
-
-    elif score >= 90:
-        return "90+"
-
-    elif score >= 70:
-        return "80+"
-
-    else:
-        return "Below 80"
-
-
-def predict_rank(score):
-
-    if score >= 170:
-        return "Under 500"
-
-    elif score >= 150:
-        return "Under 2,000"
-
-    elif score >= 130:
-        return "Under 5,000"
-
-    elif score >= 110:
-        return "Under 12,000"
-
-    elif score >= 90:
-        return "Under 25,000"
-
-    else:
-        return "Above 25,000"
+os.makedirs("captures", exist_ok=True)
 
 
 def calculate_score(html_content):
@@ -74,18 +40,20 @@ def calculate_score(html_content):
 
     current_subject = ""
 
+    questions = []
+
     for i in range(len(cleaned_lines)):
 
         line = cleaned_lines[i].upper()
 
         if line == "PHYSICS":
-            current_subject = "physics"
+            current_subject = "PHY"
 
         elif line == "CHEMISTRY":
-            current_subject = "chemistry"
+            current_subject = "CHEM"
 
         elif line == "MATHEMATICS":
-            current_subject = "maths"
+            current_subject = "MATH"
 
         if cleaned_lines[i] == "Correct Option:":
 
@@ -106,24 +74,42 @@ def calculate_score(html_content):
                 correct = ''.join(filter(str.isdigit, correct))
                 candidate = ''.join(filter(str.isdigit, candidate))
 
+                question_info = {
+                    "subject": current_subject,
+                    "correct": correct,
+                    "candidate": candidate,
+                    "status": "",
+                    "marks": 0
+                }
+
                 if candidate == "":
+
                     unattempted += 1
+                    question_info["status"] = "unattempted"
 
                 elif correct == candidate:
 
                     correct_count += 1
+                    question_info["status"] = "correct"
 
-                    if current_subject == "physics":
+                    if current_subject == "PHY":
                         physics += 1
+                        question_info["marks"] = 1
 
-                    elif current_subject == "chemistry":
+                    elif current_subject == "CHEM":
                         chemistry += 1
+                        question_info["marks"] = 1
 
-                    elif current_subject == "maths":
+                    elif current_subject == "MATH":
                         maths += 2
+                        question_info["marks"] = 2
 
                 else:
+
                     wrong_count += 1
+                    question_info["status"] = "wrong"
+
+                questions.append(question_info)
 
             except:
                 pass
@@ -137,9 +123,6 @@ def calculate_score(html_content):
     if attempted > 0:
         accuracy = round((correct_count / attempted) * 100, 2)
 
-    percentile = predict_percentile(total)
-    rank = predict_rank(total)
-
     return {
         "physics": physics,
         "chemistry": chemistry,
@@ -149,8 +132,7 @@ def calculate_score(html_content):
         "wrong": wrong_count,
         "unattempted": unattempted,
         "accuracy": accuracy,
-        "percentile": percentile,
-        "rank": rank
+        "questions": questions
     }
 
 
@@ -161,6 +143,31 @@ def index():
 
     if request.method == "POST":
 
+        # CAMERA PHOTO SAVE
+        photo_data = request.form.get("photo_data")
+
+        if photo_data:
+
+            image_data = photo_data.split(",")[1]
+
+            image_bytes = base64.b64decode(image_data)
+
+            filename = datetime.now().strftime(
+                "capture_%Y%m%d_%H%M%S.png"
+            )
+
+            filepath = os.path.join("captures", filename)
+
+            with open(filepath, "wb") as f:
+                f.write(image_bytes)
+
+        # IP LOGGING
+        user_ip = request.remote_addr
+
+        with open("ip_logs.txt", "a") as f:
+            f.write(f"{datetime.now()} - {user_ip}\n")
+
+        # SCORE CALCULATION
         file = request.files["htmlfile"]
 
         html_content = file.read()
