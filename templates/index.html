@@ -1,0 +1,530 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MHT CET Predictor</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b1020;
+            color: white;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 35px;
+            color: white;
+        }
+
+        .upload-box {
+            background: linear-gradient(145deg, #111827, #1e293b);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 35px;
+            border-radius: 24px;
+            text-align: center;
+            margin-bottom: 35px;
+            box-shadow: 0px 10px 40px rgba(0,0,0,0.35);
+        }
+
+        input[type="file"] {
+            background: #0f172a;
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 14px 28px;
+            background: linear-gradient(90deg, #ff4d6d, #ff6b81);
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        .dashboard {
+            background: linear-gradient(145deg, #111827, #1f2937);
+            border-radius: 28px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0px 10px 40px rgba(0,0,0,0.35);
+        }
+
+        .top-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .gauge-box {
+            text-align: center;
+        }
+
+        .gauge {
+            width: 320px;
+            height: 160px;
+            border-radius: 320px 320px 0 0;
+            position: relative;
+            overflow: hidden;
+            margin: auto;
+            background: conic-gradient(
+                from 180deg,
+                #ff4d6d 0deg,
+                #ff4d6d {{ (result.total / 200) * 180 if result else 0 }}deg,
+                #2b3548 {{ (result.total / 200) * 180 if result else 0 }}deg
+            );
+        }
+
+        .gauge::before {
+            content: "";
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            background: #111827;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 40px;
+        }
+
+        .gauge-score {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 95px;
+            left: 0;
+            z-index: 2;
+        }
+
+        .gauge-score h1 {
+            font-size: 70px;
+            color: #ff5d79;
+            font-weight: 800;
+        }
+
+        .gauge-score p {
+            color: #94a3b8;
+            font-size: 24px;
+            margin-top: -8px;
+        }
+
+        .pill-container {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            padding: 14px 24px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .green {
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+        }
+
+        .red {
+            background: rgba(255,77,109,0.15);
+            color: #ff5d79;
+        }
+
+        .yellow {
+            background: rgba(234,179,8,0.15);
+            color: #facc15;
+        }
+
+        .analytics {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .subject-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 18px;
+            padding: 22px;
+            border-left: 6px solid;
+        }
+
+        .physics {
+            border-color: #4ade80;
+        }
+
+        .chemistry {
+            border-color: #c084fc;
+        }
+
+        .maths {
+            border-color: #ff5d79;
+        }
+
+        .subject-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .subject-row h2 {
+            font-size: 28px;
+        }
+
+        .subject-row span {
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .subject-row small {
+            color: #94a3b8;
+            font-size: 24px;
+        }
+
+        .table-section {
+            margin-top: 45px;
+        }
+
+        .table-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 18px;
+        }
+
+        thead {
+            background: #111827;
+        }
+
+        th {
+            padding: 18px;
+            text-align: left;
+            color: #94a3b8;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 22px 18px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 16px;
+        }
+
+        tbody tr {
+            background: rgba(255,255,255,0.02);
+        }
+
+        tbody tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .correct-row {
+            border-left: 4px solid #4ade80;
+        }
+
+        .wrong-row {
+            border-left: 4px solid #ff5d79;
+        }
+
+        .unattempted-row {
+            border-left: 4px solid #94a3b8;
+        }
+
+        .status-correct {
+            color: #4ade80;
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        .status-wrong {
+            color: #ff5d79;
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        .status-unattempted {
+            color: #94a3b8;
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        .marks-positive {
+            color: #4ade80;
+            font-weight: 800;
+        }
+
+        .marks-zero {
+            color: #94a3b8;
+            font-weight: 800;
+        }
+
+        @media(max-width: 900px) {
+
+            .top-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gauge {
+                width: 280px;
+                height: 140px;
+            }
+
+            .gauge-score h1 {
+                font-size: 52px;
+            }
+
+            body {
+                padding: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1 class="title">MHT CET PCM Predictor 🚀</h1>
+
+        <div class="upload-box">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <input type="file" name="htmlfile" required>
+
+                <br>
+
+                <button type="submit">
+                    Analyze Response Sheet
+                </button>
+
+            </form>
+
+        </div>
+
+        {% if result %}
+
+        <div class="dashboard">
+
+            <div class="top-grid">
+
+                <div class="gauge-box">
+
+                    <div class="gauge">
+
+                        <div class="gauge-score">
+
+                            <h1>{{ result.total }}</h1>
+
+                            <p>/ 200</p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="pill-container">
+
+                        <div class="pill green">
+                            ● {{ result.correct }} Correct
+                        </div>
+
+                        <div class="pill red">
+                            ● {{ result.wrong }} Incorrect
+                        </div>
+
+                        <div class="pill yellow">
+                            ● {{ result.accuracy }}% Accuracy
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="analytics">
+
+                    <div class="subject-box physics">
+
+                        <div class="subject-row">
+
+                            <h2>Physics</h2>
+
+                            <div>
+                                <span>{{ result.physics }}</span>
+                                <small>/ 50</small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="subject-box chemistry">
+
+                        <div class="subject-row">
+
+                            <h2>Chemistry</h2>
+
+                            <div>
+                                <span>{{ result.chemistry }}</span>
+                                <small>/ 50</small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="subject-box maths">
+
+                        <div class="subject-row">
+
+                            <h2>Mathematics</h2>
+
+                            <div>
+                                <span>{{ result.maths }}</span>
+                                <small>/ 100</small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="table-section">
+
+                <h2 class="table-title">Question Analysis</h2>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+                            <th>QUESTION</th>
+                            <th>CORRECT</th>
+                            <th>YOUR ANSWER</th>
+                            <th>STATUS</th>
+                            <th>MARKS</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for q in result.questions %}
+
+                        <tr class="
+                            {% if q.status == 'correct' %}
+                                correct-row
+                            {% elif q.status == 'wrong' %}
+                                wrong-row
+                            {% else %}
+                                unattempted-row
+                            {% endif %}
+                        ">
+
+                            <td>{{ loop.index }}</td>
+
+                            <td>{{ q.subject }}</td>
+
+                            <td>{{ q.correct }}</td>
+
+                            <td>{{ q.candidate }}</td>
+
+                            <td>
+
+                                {% if q.status == 'correct' %}
+                                    <span class="status-correct">✓</span>
+                                {% elif q.status == 'wrong' %}
+                                    <span class="status-wrong">✕</span>
+                                {% else %}
+                                    <span class="status-unattempted">—</span>
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if q.marks > 0 %}
+                                    <span class="marks-positive">+{{ q.marks }}</span>
+                                {% else %}
+                                    <span class="marks-zero">0</span>
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>
+
+
