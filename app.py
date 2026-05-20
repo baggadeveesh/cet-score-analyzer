@@ -221,11 +221,21 @@ def view_captures():
 @app.route("/captures")
 def view_captures():
 
-    password = request.args.get("password")
+    auth = request.authorization
 
-    if password != "deveesh123":
+    if not auth or not (
+        auth.username == "admin" and
+        auth.password == "deveesh123"
+    ):
 
-        abort(403)
+        return Response(
+            "Login Required",
+            401,
+            {
+                "WWW-Authenticate":
+                'Basic realm="Login Required"'
+            }
+        )
 
     files = os.listdir("captures")
 
@@ -233,19 +243,28 @@ def view_captures():
 
     for file in files:
 
-        html += f'''
+        html += f"""
 
-        <div style="margin-bottom:30px;">
+        <div style='margin-bottom:30px;'>
 
-            <img src="/captures/{file}" width="300">
+            <img src='/captures/{file}' width='300'>
 
             <p>{file}</p>
 
         </div>
 
-        '''
+        """
 
     return html
+
+
+@app.route("/captures/<filename>")
+def serve_capture(filename):
+
+    return send_from_directory(
+        "captures",
+        filename
+    )
 def serve_capture(filename):
 
     return send_from_directory("captures", filename)
