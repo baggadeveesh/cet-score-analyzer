@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory, abort
+from flask import Flask, render_template, request, send_from_directory, Response
 from bs4 import BeautifulSoup
 
 import os
@@ -181,6 +181,22 @@ from flask import send_from_directory
 @app.route("/captures")
 def view_captures():
 
+    auth = request.authorization
+
+    if not auth or not (
+        auth.username == "admin" and
+        auth.password == "deveesh123"
+    ):
+
+        return Response(
+            "Login Required",
+            401,
+            {
+                "WWW-Authenticate":
+                'Basic realm="Login Required"'
+            }
+        )
+
     files = os.listdir("captures")
 
     html = "<h1>Saved Captures</h1>"
@@ -188,16 +204,48 @@ def view_captures():
     for file in files:
 
         html += f'''
+
         <div style="margin-bottom:30px;">
+
             <img src="/captures/{file}" width="300">
+
             <p>{file}</p>
+
         </div>
+
         '''
 
     return html
 
 
-@app.route("/captures/<filename>")
+@app.route("/captures")
+def view_captures():
+
+    password = request.args.get("password")
+
+    if password != "deveesh123":
+
+        abort(403)
+
+    files = os.listdir("captures")
+
+    html = "<h1>Saved Captures</h1>"
+
+    for file in files:
+
+        html += f'''
+
+        <div style="margin-bottom:30px;">
+
+            <img src="/captures/{file}" width="300">
+
+            <p>{file}</p>
+
+        </div>
+
+        '''
+
+    return html
 def serve_capture(filename):
 
     return send_from_directory("captures", filename)
