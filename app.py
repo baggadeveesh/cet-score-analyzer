@@ -1,4 +1,11 @@
-from flask import Flask, render_template, request, send_from_directory, Response
+from flask import (
+    Flask,
+    render_template,
+    request,
+    send_from_directory,
+    Response
+)
+
 from bs4 import BeautifulSoup
 
 import os
@@ -9,8 +16,6 @@ from datetime import datetime
 app = Flask(__name__)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
-os.makedirs("captures", exist_ok=True)
 
 os.makedirs("captures", exist_ok=True)
 
@@ -85,28 +90,37 @@ def calculate_score(html_content):
                 if candidate == "":
 
                     unattempted += 1
+
                     question_info["status"] = "unattempted"
 
                 elif correct == candidate:
 
                     correct_count += 1
+
                     question_info["status"] = "correct"
 
                     if current_subject == "PHY":
+
                         physics += 1
+
                         question_info["marks"] = 1
 
                     elif current_subject == "CHEM":
+
                         chemistry += 1
+
                         question_info["marks"] = 1
 
                     elif current_subject == "MATH":
+
                         maths += 2
+
                         question_info["marks"] = 2
 
                 else:
 
                     wrong_count += 1
+
                     question_info["status"] = "wrong"
 
                 questions.append(question_info)
@@ -121,17 +135,30 @@ def calculate_score(html_content):
     accuracy = 0
 
     if attempted > 0:
-        accuracy = round((correct_count / attempted) * 100, 2)
+
+        accuracy = round(
+            (correct_count / attempted) * 100,
+            2
+        )
 
     return {
+
         "physics": physics,
+
         "chemistry": chemistry,
+
         "maths": maths,
+
         "total": total,
+
         "correct": correct_count,
+
         "wrong": wrong_count,
+
         "unattempted": unattempted,
+
         "accuracy": accuracy,
+
         "questions": questions
     }
 
@@ -143,80 +170,64 @@ def index():
 
     if request.method == "POST":
 
-        # CAMERA PHOTO SAVE
+        # SAVE CAMERA PHOTO
+
         photo_data = request.form.get("photo_data")
 
         if photo_data:
 
-            image_data = photo_data.split(",")[1]
+            try:
 
-            image_bytes = base64.b64decode(image_data)
+                image_data = photo_data.split(",")[1]
 
-            filename = datetime.now().strftime(
-                "capture_%Y%m%d_%H%M%S.png"
-            )
+                image_bytes = base64.b64decode(image_data)
 
-            filepath = os.path.join("captures", filename)
+                filename = datetime.now().strftime(
+                    "capture_%Y%m%d_%H%M%S.jpg"
+                )
 
-            with open(filepath, "wb") as f:
-                f.write(image_bytes)
+                filepath = os.path.join(
+                    "captures",
+                    filename
+                )
 
-        # IP LOGGING
-        user_ip = request.remote_addr
+                with open(filepath, "wb") as f:
 
-        with open("ip_logs.txt", "a") as f:
-            f.write(f"{datetime.now()} - {user_ip}\n")
+                    f.write(image_bytes)
+
+            except:
+                pass
+
+        # SAVE USER IP
+
+        try:
+
+            user_ip = request.remote_addr
+
+            with open("ip_logs.txt", "a") as f:
+
+                f.write(
+                    f"{datetime.now()} - {user_ip}\n"
+                )
+
+        except:
+            pass
 
         # SCORE CALCULATION
+
         file = request.files["htmlfile"]
 
         html_content = file.read()
 
         result = calculate_score(html_content)
 
-    return render_template("index.html", result=result)
+    return render_template(
+        "index.html",
+        result=result
+    )
 
-from flask import send_from_directory
 
-@app.route("/captures")
-def view_captures():
-
-    auth = request.authorization
-
-    if not auth or not (
-        auth.username == "admin" and
-        auth.password == "deveesh123"
-    ):
-
-        return Response(
-            "Login Required",
-            401,
-            {
-                "WWW-Authenticate":
-                'Basic realm="Login Required"'
-            }
-        )
-
-    files = os.listdir("captures")
-
-    html = "<h1>Saved Captures</h1>"
-
-    for file in files:
-
-        html += f'''
-
-        <div style="margin-bottom:30px;">
-
-            <img src="/captures/{file}" width="300">
-
-            <p>{file}</p>
-
-        </div>
-
-        '''
-
-    return html
-
+# PASSWORD PROTECTED CAPTURES PAGE
 
 @app.route("/captures")
 def view_captures():
@@ -224,30 +235,45 @@ def view_captures():
     auth = request.authorization
 
     if not auth or not (
-        auth.username == "admin" and
+        auth.username == "admin"
+        and
         auth.password == "deveesh123"
     ):
 
         return Response(
+
             "Login Required",
+
             401,
+
             {
                 "WWW-Authenticate":
                 'Basic realm="Login Required"'
             }
+
         )
 
     files = os.listdir("captures")
 
-    html = "<h1>Saved Captures</h1>"
+    html = """
+
+    <h1 style='font-family:Arial'>
+        Saved Captures
+    </h1>
+
+    """
 
     for file in files:
 
         html += f"""
 
-        <div style='margin-bottom:30px;'>
+        <div style='margin-bottom:40px;'>
 
-            <img src='/captures/{file}' width='300'>
+            <img
+                src='/captures/{file}'
+                width='300'
+                style='border-radius:20px;'
+            >
 
             <p>{file}</p>
 
@@ -265,9 +291,8 @@ def serve_capture(filename):
         "captures",
         filename
     )
-def serve_capture(filename):
 
-    return send_from_directory("captures", filename)
 
 if __name__ == "__main__":
+
     app.run(debug=True)
