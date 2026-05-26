@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MHT CET PCM Predictor</title>
@@ -68,6 +69,13 @@ body::before {
 .header {
   text-align: center;
   margin-bottom: 50px;
+  <div style="margin-top:20px;">
+
+<button id="themeBtn">
+🌙 Toggle Theme
+</button>
+
+</div>
 }
 
 .title {
@@ -197,6 +205,13 @@ button:disabled {
 .dashboard {
   margin-top: 60px;
   animation: fadeIn 0.6s ease-out forwards;
+  <div style="text-align:center;margin-bottom:30px;">
+
+<button onclick="window.print()">
+📄 Download PDF Report
+</button>
+
+</div>
 }
 
 @keyframes fadeIn {
@@ -210,7 +225,59 @@ button:disabled {
   gap: 30px;
   margin-bottom: 30px;
 }
+<div class="dash-grid">
 
+    <div class="card">
+        <h2 class="table-title">🎯 Predicted Percentile</h2>
+
+        <div style="text-align:center;padding:20px">
+
+            <h1 style="font-size:60px;color:#ff4d6d;">
+                {{ result.percentile }}%
+            </h1>
+
+            <p style="color:#94a3b8;">
+                Estimated percentile based on recent MHT-CET trends
+            </p>
+
+        </div>
+    </div>
+  <div class="card" style="margin-bottom:30px;">
+
+    <h2 class="table-title">📈 Previous Year Comparison</h2>
+
+    <div style="font-size:18px;line-height:1.8">
+
+        <p>
+            Score:
+            <strong>{{ result.total }}/200</strong>
+        </p>
+
+        <p>
+            Expected Percentile:
+            <strong>{{ result.percentile }}%</strong>
+        </p>
+
+        <p style="color:#94a3b8">
+
+            Based on previous CET trends this score generally falls near
+            the {{ result.percentile }} percentile range.
+
+        </p>
+
+    </div>
+
+</div>
+
+    <div class="card">
+
+        <h2 class="table-title">📊 Subject Performance</h2>
+
+        <canvas id="accuracyChart"></canvas>
+
+    </div>
+
+</div>
 .card {
   background: rgba(15, 22, 41, 0.7);
   backdrop-filter: blur(12px);
@@ -440,6 +507,22 @@ tbody tr:last-child td { border-bottom: none; }
     from{transform:rotate(0deg);}
     to{transform:rotate(360deg);}
 }
+  body.light{
+    background:#f5f7fb;
+    color:#111827;
+}
+
+body.light .card,
+body.light .upload-box,
+body.light .table-section{
+    background:white;
+    color:#111827;
+}
+
+body.light .subject-row h2,
+body.light .table-title{
+    color:#111827;
+}
 </style>
 </head>
 
@@ -627,7 +710,61 @@ form.addEventListener('submit', function(){
     ).style.display = 'flex';
 
 });
+themeBtn?.addEventListener('click', ()=>{
 
+    document.body.classList.toggle('light');
+
+});
+
+{% if result %}
+
+new Chart(
+
+document.getElementById('accuracyChart'),
+
+{
+type:'bar',
+
+data:{
+labels:[
+'Physics',
+'Chemistry',
+'Maths'
+],
+
+datasets:[{
+
+label:'Marks',
+
+data:[
+{{ result.physics }},
+{{ result.chemistry }},
+{{ result.maths }}
+],
+
+backgroundColor:[
+'#4ade80',
+'#c084fc',
+'#ff5d79'
+]
+
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{
+display:false
+}
+}
+}
+
+}
+
+);
+
+{% endif %}
 </script>
 
 </body>
