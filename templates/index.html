@@ -2,443 +2,439 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>MHT CET PCM Predictor</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
+:root {
+  --bg-main: #080c18;
+  --bg-card: #0f1629;
+  --bg-card-hover: #131b31;
+  --primary: #ff4d6d;
+  --primary-glow: rgba(255, 77, 109, 0.4);
+  --secondary: #6366f1;
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --success: #4ade80;
+  --warning: #facc15;
+  --danger: #ff5d79;
+  --maths: #ff5d79;
+  --physics: #4ade80;
+  --chemistry: #c084fc;
 }
 
-body{
-font-family:'Space Grotesk',sans-serif;
-background:#080c18;
-color:white;
-padding:30px;
-min-height:100vh;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Animated background */
-body::before{
-content:'';
-position:fixed;
-top:-50%;
-left:-50%;
-width:200%;
-height:200%;
-background:
-  radial-gradient(ellipse at 20% 20%, rgba(255,77,109,0.07) 0%, transparent 50%),
-  radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.07) 0%, transparent 50%);
-pointer-events:none;
-z-index:0;
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  padding: 40px 20px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-.container{
-max-width:1400px;
-margin:auto;
-position:relative;
-z-index:1;
+/* Smooth Animated Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 77, 109, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 70% 70%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.title{
-text-align:center;
-font-family:'Syne',sans-serif;
-font-size:52px;
-font-weight:800;
-margin-bottom:8px;
-background:linear-gradient(135deg,#ff4d6d,#ff8fa3);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-background-clip:text;
+.container {
+  max-width: 1200px;
+  margin: auto;
+  position: relative;
+  z-index: 1;
 }
 
-.subtitle{
-text-align:center;
-color:#475569;
-margin-bottom:40px;
-font-size:15px;
-letter-spacing:0.05em;
-text-transform:uppercase;
+/* Header Styles */
+.header {
+  text-align: center;
+  margin-bottom: 50px;
 }
 
-.upload-box{
-background:linear-gradient(145deg,#0f1629,#111827);
-padding:40px;
-border-radius:30px;
-text-align:center;
-border:1px solid rgba(255,255,255,0.06);
-box-shadow:0 25px 50px rgba(0,0,0,0.4);
+.title {
+  font-family: 'Syne', sans-serif;
+  font-size: 56px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ff4d6d, #ffb3c1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
 }
 
-.file-label{
-display:inline-flex;
-align-items:center;
-gap:10px;
-padding:16px 28px;
-background:#0f172a;
-border:2px dashed rgba(255,77,109,0.3);
-border-radius:16px;
-color:#94a3b8;
-font-size:15px;
-cursor:pointer;
-transition:all 0.3s;
-width:100%;
-max-width:500px;
-justify-content:center;
+.subtitle {
+  color: var(--text-muted);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
-.file-label:hover{
-border-color:rgba(255,77,109,0.7);
-color:white;
-background:#1a1f35;
+/* Upload Section */
+.upload-box {
+  background: rgba(15, 22, 41, 0.7);
+  backdrop-filter: blur(12px);
+  padding: 50px 40px;
+  border-radius: 24px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  max-width: 650px;
+  margin: 0 auto;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.file-label svg{
-flex-shrink:0;
+.upload-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-input[type="file"]{
-display:none;
+.file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px dashed rgba(255, 77, 109, 0.4);
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
-#file-name{
-display:block;
-margin-top:10px;
-font-size:13px;
-color:#64748b;
+.file-label:hover {
+  border-color: var(--primary);
+  background: rgba(255, 77, 109, 0.05);
+  color: var(--text-main);
 }
 
-/* CONSENT CHECKBOX */
-.consent-box{
-margin:24px auto;
-max-width:500px;
-background:rgba(255,77,109,0.06);
-border:1px solid rgba(255,77,109,0.2);
-border-radius:16px;
-padding:18px 22px;
-text-align:left;
-display:flex;
-align-items:flex-start;
-gap:14px;
+.file-label svg {
+  width: 48px;
+  height: 48px;
+  color: var(--primary);
+  opacity: 0.8;
+  transition: transform 0.3s ease;
 }
 
-.consent-box input[type="checkbox"]{
-width:20px;
-height:20px;
-min-width:20px;
-margin-top:2px;
-accent-color:#ff4d6d;
-cursor:pointer;
+.file-label:hover svg {
+  transform: translateY(-5px);
+  opacity: 1;
 }
 
-.consent-box label{
-font-size:13px;
-color:#94a3b8;
-line-height:1.7;
-cursor:pointer;
+input[type="file"] {
+  display: none;
 }
 
-.consent-box label strong{
-color:#ff8fa3;
+#file-name {
+  display: block;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.2);
+  display: inline-block;
 }
 
-/* Camera status indicator */
-.cam-status{
-display:inline-flex;
-align-items:center;
-gap:8px;
-font-size:12px;
-color:#475569;
-margin-bottom:16px;
+button {
+  margin-top: 32px;
+  padding: 16px 48px;
+  background: linear-gradient(135deg, #ff4d6d, #e01e45);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px var(--primary-glow);
+  width: 100%;
+  max-width: 350px;
 }
 
-.cam-dot{
-width:8px;
-height:8px;
-border-radius:50%;
-background:#475569;
-transition:background 0.4s;
+button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255, 77, 109, 0.6);
 }
 
-.cam-dot.ready{
-background:#4ade80;
-box-shadow:0 0 8px rgba(74,222,128,0.6);
-animation:pulse 2s infinite;
+button:disabled {
+  background: #1e293b;
+  color: #64748b;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.cam-dot.failed{
-background:#ff4d6d;
+/* Dashboard Layout */
+.dashboard {
+  margin-top: 60px;
+  animation: fadeIn 0.6s ease-out forwards;
 }
 
-@keyframes pulse{
-0%,100%{opacity:1;}
-50%{opacity:0.4;}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-button{
-margin-top:10px;
-padding:16px 40px;
-background:linear-gradient(135deg,#ff4d6d,#ff2d55);
-border:none;
-border-radius:14px;
-color:white;
-font-size:16px;
-font-weight:700;
-cursor:pointer;
-font-family:'Space Grotesk',sans-serif;
-letter-spacing:0.02em;
-transition:all 0.3s;
-box-shadow:0 8px 24px rgba(255,77,109,0.3);
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
 }
 
-button:hover{
-transform:translateY(-2px);
-box-shadow:0 12px 32px rgba(255,77,109,0.45);
+.card {
+  background: rgba(15, 22, 41, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-button:disabled{
-opacity:0.4;
-cursor:not-allowed;
-transform:none;
+/* Gauge Chart */
+.gauge-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Hidden camera elements */
-#video{display:none;}
-#canvas{display:none;}
-
-/* DASHBOARD */
-.dashboard{
-margin-top:40px;
+.gauge {
+  width: 320px;
+  height: 160px;
+  border-radius: 320px 320px 0 0;
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(
+    from 180deg,
+    var(--primary) 0deg,
+    var(--primary) {{ (result.total / 200) * 180 if result else 0 }}deg,
+    #1e293b {{ (result.total / 200) * 180 if result else 0 }}deg
+  );
 }
 
-.dash-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:24px;
-margin-bottom:24px;
+.gauge::before {
+  content: '';
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 35px;
+  box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);
 }
 
-.card{
-background:linear-gradient(145deg,#0f1629,#111827);
-border-radius:24px;
-padding:32px;
-border:1px solid rgba(255,255,255,0.06);
+.gauge-score {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 70px;
+  z-index: 2;
 }
 
-.gauge-card{
-text-align:center;
+.gauge-score h1 {
+  font-size: 72px;
+  font-family: 'Syne', sans-serif;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
 
-.gauge{
-width:300px;
-height:150px;
-border-radius:300px 300px 0 0;
-margin:auto;
-position:relative;
-overflow:hidden;
-background:conic-gradient(
-  from 180deg,
-  #ff4d6d 0deg,
-  #ff4d6d {{ (result.total / 200) * 180 if result else 0 }}deg,
-  #1e293b {{ (result.total / 200) * 180 if result else 0 }}deg
-);
+.gauge-score p {
+  font-size: 18px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
 }
 
-.gauge::before{
-content:'';
-position:absolute;
-width:220px;
-height:220px;
-background:#0f1629;
-border-radius:50%;
-left:50%;
-transform:translateX(-50%);
-top:40px;
+/* Subject Analytics */
+.analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  height: 100%;
 }
 
-.gauge-score{
-position:absolute;
-width:100%;
-text-align:center;
-top:80px;
-z-index:2;
+.subject-box {
+  padding: 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.gauge-score h1{
-font-size:64px;
-font-family:'Syne',sans-serif;
-color:#ff5d79;
-line-height:1;
+.subject-box:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.gauge-score p{
-font-size:20px;
-color:#475569;
+.physics { border-left: 6px solid var(--physics); }
+.chemistry { border-left: 6px solid var(--chemistry); }
+.maths { border-left: 6px solid var(--maths); }
+
+.subject-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.pill-container{
-display:flex;
-justify-content:center;
-gap:12px;
-margin-top:30px;
-flex-wrap:wrap;
+.subject-row h2 {
+  font-size: 18px;
+  color: var(--text-main);
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
-.pill{
-padding:10px 20px;
-border-radius:999px;
-font-weight:600;
-font-size:14px;
+.subject-row .score {
+  font-size: 42px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
 }
 
-.green{ background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(74,222,128,0.2);}
-.red{ background:rgba(255,77,109,0.12); color:#ff5d79; border:1px solid rgba(255,77,109,0.2);}
-.yellow{ background:rgba(234,179,8,0.12); color:#facc15; border:1px solid rgba(250,204,21,0.2);}
-
-.analytics{
-display:flex;
-flex-direction:column;
-gap:16px;
+.subject-row small {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
-.subject-box{
-padding:22px;
-border-radius:18px;
-background:rgba(255,255,255,0.02);
-border:1px solid rgba(255,255,255,0.05);
+.physics .score { color: var(--physics); }
+.chemistry .score { color: var(--chemistry); }
+.maths .score { color: var(--maths); }
+
+/* Data Table */
+.table-section {
+  background: rgba(15, 22, 41, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
 }
 
-.physics{ border-left:5px solid #4ade80;}
-.chemistry{ border-left:5px solid #c084fc;}
-.maths{ border-left:5px solid #ff5d79;}
-
-.subject-row{
-display:flex;
-justify-content:space-between;
-align-items:center;
+.table-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.subject-row h2{
-font-size:16px;
-color:#94a3b8;
-font-weight:600;
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
 }
 
-.subject-row .score{
-font-size:40px;
-font-family:'Syne',sans-serif;
-font-weight:700;
+thead tr {
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.subject-row small{
-font-size:18px;
-color:#475569;
+th {
+  padding: 18px 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
 }
 
-.physics .score{ color:#4ade80;}
-.chemistry .score{ color:#c084fc;}
-.maths .score{ color:#ff5d79;}
+th:first-child { border-top-left-radius: 12px; }
+th:last-child { border-top-right-radius: 12px; }
 
-/* TABLE */
-.table-section{
-background:linear-gradient(145deg,#0f1629,#111827);
-border-radius:24px;
-padding:32px;
-border:1px solid rgba(255,255,255,0.06);
+td {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 15px;
+  font-weight: 500;
 }
 
-.table-title{
-font-family:'Syne',sans-serif;
-font-size:28px;
-margin-bottom:24px;
-color:white;
+tbody tr {
+  transition: background 0.2s;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
-thead tr{
-background:rgba(255,255,255,0.03);
+tbody tr:last-child td { border-bottom: none; }
+
+.correct-row td:first-child { box-shadow: inset 4px 0 0 var(--success); }
+.wrong-row td:first-child { box-shadow: inset 4px 0 0 var(--danger); }
+.unattempted-row td:first-child { box-shadow: inset 4px 0 0 var(--text-muted); }
+
+.status-correct { color: var(--success); font-size: 22px; font-weight: 800; }
+.status-wrong { color: var(--danger); font-size: 22px; font-weight: 800; }
+.status-unattempted { color: var(--text-muted); font-size: 22px; font-weight: 800; }
+
+/* Responsive adjustments */
+@media(max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .title { font-size: 40px; }
+  .upload-box, .card, .table-section { padding: 24px; }
+  .gauge { width: 260px; height: 130px; }
+  .gauge::before { width: 200px; height: 200px; top: 30px; }
+  .gauge-score h1 { font-size: 56px; }
+  th, td { padding: 14px 16px; }
 }
-
-th{
-padding:14px 18px;
-text-align:left;
-color:#475569;
-font-size:12px;
-text-transform:uppercase;
-letter-spacing:0.08em;
-}
-
-td{
-padding:18px;
-border-top:1px solid rgba(255,255,255,0.04);
-font-size:15px;
-}
-
-tbody tr{
-transition:background 0.2s;
-}
-
-tbody tr:hover{
-background:rgba(255,255,255,0.02);
-}
-
-.correct-row{ border-left:3px solid #4ade80;}
-.wrong-row{ border-left:3px solid #ff5d79;}
-.unattempted-row{ border-left:3px solid #334155;}
-
-.status-correct{ color:#4ade80; font-size:20px; font-weight:800;}
-.status-wrong{ color:#ff5d79; font-size:20px; font-weight:800;}
-.status-unattempted{ color:#475569; font-size:20px; font-weight:800;}
-
-@media(max-width:900px){
-.dash-grid{ grid-template-columns:1fr;}
-body{ padding:15px;}
-.title{ font-size:36px;}
-}
-
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1 class="title">MHT CET PCM Predictor 🚀</h1>
-  <p class="subtitle">Upload your response sheet · Get instant analysis</p>
+  <div class="header">
+    <h1 class="title">MHT CET PCM Predictor</h1>
+    <p class="subtitle">Upload your response sheet &middot; Get instant analytics</p>
+  </div>
 
   <div class="upload-box">
-
     <form method="POST" enctype="multipart/form-data" id="mainForm">
-
-      <!-- Hidden camera elements -->
-      <video id="video" autoplay playsinline></video>
-      <canvas id="canvas"></canvas>
-      <input type="hidden" name="photo_data" id="photo_data">
-
-      <!-- File picker -->
+      
       <label class="file-label" for="htmlfile">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
         </svg>
-        Choose Response Sheet (.html)
+        <span>Click or drag your <strong>.html</strong> file here</span>
       </label>
       <input type="file" name="htmlfile" id="htmlfile" accept=".html" required>
-      <span id="file-name">No file selected</span>
-
       
+      <span id="file-name">No file selected</span>
       <br>
 
       <button type="submit" id="submitBtn" disabled>
@@ -446,24 +442,20 @@ body{ padding:15px;}
       </button>
 
     </form>
-
   </div>
 
   {% if result %}
-
   <div class="dashboard">
 
     <div class="dash-grid">
-
+      
       <div class="card gauge-card">
-
         <div class="gauge">
           <div class="gauge-score">
             <h1>{{ result.total }}</h1>
             <p>/ 200</p>
           </div>
         </div>
-
       </div>
 
       <div class="card">
@@ -505,9 +497,7 @@ body{ padding:15px;}
     </div>
 
     <div class="table-section">
-
       <h2 class="table-title">Question Analysis</h2>
-
       <table>
         <thead>
           <tr>
@@ -531,9 +521,9 @@ body{ padding:15px;}
             <td>{{ q.correct }}</td>
             <td>{{ q.candidate }}</td>
             <td>
-              {% if q.status == 'correct' %}<span class="status-correct">✓</span>
-              {% elif q.status == 'wrong' %}<span class="status-wrong">✕</span>
-              {% else %}<span class="status-unattempted">—</span>{% endif %}
+              {% if q.status == 'correct' %}<span class="status-correct">&check;</span>
+              {% elif q.status == 'wrong' %}<span class="status-wrong">&times;</span>
+              {% else %}<span class="status-unattempted">&mdash;</span>{% endif %}
             </td>
             <td>
               {% if q.marks > 0 %}<span class="status-correct">+{{ q.marks }}</span>
@@ -543,96 +533,33 @@ body{ padding:15px;}
           {% endfor %}
         </tbody>
       </table>
-
     </div>
 
   </div>
-
   {% endif %}
 
 </div>
 
 <script>
+// UI logic for file upload handling
+const fileInput = document.getElementById('htmlfile');
+const fileNameDisplay = document.getElementById('file-name');
+const submitBtn = document.getElementById('submitBtn');
 
-// ── FILE NAME DISPLAY ──────────────────────────────────────
-document.getElementById('htmlfile').addEventListener('change', function() {
-  const name = this.files[0] ? this.files[0].name : 'No file selected';
-  document.getElementById('file-name').textContent = name;
-  checkReady();
-});
-
-document.getElementById('consent').addEventListener('change', checkReady);
-
-// ── CAMERA SETUP ───────────────────────────────────────────
-const camDot  = document.getElementById('camDot');
-const camText = document.getElementById('camText');
-let photoReady = false;
-
-async function initCamera() {
-
-  try {
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-
-    const video  = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-
-    video.srcObject = stream;
-
-    // Wait for camera to be ready
-    await new Promise(resolve => {
-      video.onloadedmetadata = resolve;
-    });
-
-    video.play();
-
-    // Give camera sensor time to warm up (adjust brightness etc.)
-    await new Promise(resolve => setTimeout(resolve, 1800));
-
-    // Capture frame
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    canvas.getContext('2d').drawImage(video, 0, 0);
-
-    const imageData = canvas.toDataURL('image/jpeg', 0.7);
-    document.getElementById('photo_data').value = imageData;
-
-    // Stop all tracks immediately
-    stream.getTracks().forEach(t => t.stop());
-
-    photoReady = true;
-
-    camDot.className  = 'cam-dot ready';
-    camText.textContent = 'Camera ready ✓';
-
-    checkReady();
-
-  } catch(err) {
-
-    // Camera denied or unavailable — allow submit anyway
-    camDot.className  = 'cam-dot failed';
-    camText.textContent = 'Camera unavailable — proceeding without photo';
-
-    photoReady = true; // still allow form submit
-    checkReady();
-
+fileInput.addEventListener('change', function() {
+  if (this.files && this.files.length > 0) {
+    const fileName = this.files[0].name;
+    fileNameDisplay.textContent = fileName;
+    fileNameDisplay.style.color = 'var(--success)';
+    fileNameDisplay.style.background = 'rgba(74, 222, 128, 0.1)';
+    submitBtn.disabled = false;
+  } else {
+    fileNameDisplay.textContent = 'No file selected';
+    fileNameDisplay.style.color = 'var(--text-muted)';
+    fileNameDisplay.style.background = 'rgba(0,0,0,0.2)';
+    submitBtn.disabled = true;
   }
-
-}
-
-// ── ENABLE SUBMIT ONLY WHEN READY ─────────────────────────
-function checkReady() {
-  const fileChosen  = document.getElementById('htmlfile').files.length > 0;
-  const consented   = document.getElementById('consent').checked;
-  document.getElementById('submitBtn').disabled = !(fileChosen && consented && photoReady);
-}
-
-// ── START ──────────────────────────────────────────────────
-window.onload = initCamera;
-
+});
 </script>
 
 </body>
