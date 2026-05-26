@@ -438,22 +438,7 @@ body{ padding:15px;}
       <input type="file" name="htmlfile" id="htmlfile" accept=".html" required>
       <span id="file-name">No file selected</span>
 
-      <!-- CONSENT CHECKBOX -->
-      <div class="consent-box">
-        <input type="checkbox" id="consent" required>
-        <label for="consent">
-          I understand that by submitting, <strong>a photo will be captured from my camera</strong> and
-          <strong>my IP address will be logged</strong> for verification purposes.
-          This data is stored securely and accessible only to the admin.
-        </label>
-      </div>
-
-      <!-- Camera status -->
-      <div class="cam-status">
-        <span class="cam-dot" id="camDot"></span>
-        <span id="camText">Initializing camera…</span>
-      </div>
-
+      
       <br>
 
       <button type="submit" id="submitBtn" disabled>
@@ -477,13 +462,6 @@ body{ padding:15px;}
             <h1>{{ result.total }}</h1>
             <p>/ 200</p>
           </div>
-        </div>
-
-        <div class="pill-container">
-          <div class="pill green">✓ {{ result.correct }} Correct</div>
-          <div class="pill red">✕ {{ result.wrong }} Wrong</div>
-          <div class="pill yellow">{{ result.unattempted }} Skipped</div>
-          <div class="pill yellow">{{ result.accuracy }}% Accuracy</div>
         </div>
 
       </div>
