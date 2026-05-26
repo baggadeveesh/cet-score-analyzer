@@ -703,49 +703,39 @@ document.getElementById('themeBtn')?.addEventListener('click', () => {
 {% if result %}
 
 new Chart(
-
 document.getElementById('accuracyChart'),
-
 {
-type:'bar',
+    type:'bar',
 
-data:{
-labels:[
-'Physics',
-'Chemistry',
-'Maths'
-],
+    data:{
+        labels:['Physics','Chemistry','Maths'],
 
-datasets:[{
+        datasets:[{
+            label:'Marks',
 
-label:'Marks',
+            data:[
+                {{ result.physics }},
+                {{ result.chemistry }},
+                {{ result.maths }}
+            ],
 
-data:[
-{{ result.physics }},
-{{ result.chemistry }},
-{{ result.maths }}
-],
+            backgroundColor:[
+                '#4ade80',
+                '#c084fc',
+                '#ff5d79'
+            ]
+        }]
+    },
 
-backgroundColor:[
-'#4ade80',
-'#c084fc',
-'#ff5d79'
-]
-
-}]
-},
-
-options:{
-responsive:true,
-plugins:{
-legend:{
-display:false
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{
+                display:false
+            }
+        }
+    }
 }
-}
-}
-
-}
-
 );
 
 {% endif %}
