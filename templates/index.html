@@ -257,7 +257,7 @@ button:disabled {
 
 .gauge-score{
     position:absolute;
-    top:50px;
+    top:62px;
     left:0;
     width:100%;
     text-align:center;
@@ -265,10 +265,11 @@ button:disabled {
 }
 
 .gauge-score h1{
-    font-size:72px;
+    font-size:58px;
     line-height:1;
     color:white;
     margin:0;
+    font-family:'Syne',sans-serif;
 }
 
 .gauge-score p{
@@ -411,6 +412,34 @@ tbody tr:last-child td { border-bottom: none; }
   .gauge-score h1 { font-size: 56px; }
   th, td { padding: 14px 16px; }
 }
+  #loadingOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(8,12,24,.95);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+}
+
+.loader-box{
+    text-align:center;
+}
+
+.spinner{
+    width:70px;
+    height:70px;
+    border:6px solid rgba(255,255,255,.1);
+    border-top:6px solid #ff4d6d;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:auto auto 20px;
+}
+
+@keyframes spin{
+    from{transform:rotate(0deg);}
+    to{transform:rotate(360deg);}
+}
 </style>
 </head>
 
@@ -539,34 +568,66 @@ tbody tr:last-child td { border-bottom: none; }
   {% endif %}
 
 </div>
+<div id="loadingOverlay">
 
+    <div class="loader-box">
+
+        <div class="spinner"></div>
+
+        <h2>Analyzing Response Sheet...</h2>
+
+        <p>Please wait a few seconds</p>
+
+    </div>
+
+</div>
 <script>
-// UI logic for file upload handling
+
 const fileInput = document.getElementById('htmlfile');
 const fileNameDisplay = document.getElementById('file-name');
 const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('mainForm');
 
-fileInput.addEventListener('change', function() {
-  if (this.files && this.files.length > 0) {
-    const fileName = this.files[0].name;
-    
-    // Update text and add a subtle green highlight
-    fileNameDisplay.textContent = fileName;
-    fileNameDisplay.style.color = '#4ade80'; // success green
-    fileNameDisplay.style.background = 'rgba(74, 222, 128, 0.1)';
-    
-    // Enable the analyze button
-    submitBtn.disabled = false;
-  } else {
-    // Revert to default state if no file is selected
-    fileNameDisplay.textContent = 'No file selected';
-    fileNameDisplay.style.color = '#94a3b8'; // muted grey
-    fileNameDisplay.style.background = 'rgba(0,0,0,0.2)';
-    
-    // Keep button disabled
-    submitBtn.disabled = true;
-  }
+fileInput.addEventListener('change', function(){
+
+    if(this.files.length){
+
+        fileNameDisplay.textContent =
+            this.files[0].name;
+
+        fileNameDisplay.style.color =
+            '#4ade80';
+
+        fileNameDisplay.style.background =
+            'rgba(74,222,128,.1)';
+
+        submitBtn.disabled = false;
+
+    } else {
+
+        fileNameDisplay.textContent =
+            'No file selected';
+
+        fileNameDisplay.style.color =
+            '#94a3b8';
+
+        fileNameDisplay.style.background =
+            'rgba(0,0,0,.2)';
+
+        submitBtn.disabled = true;
+
+    }
+
 });
+
+form.addEventListener('submit', function(){
+
+    document.getElementById(
+        'loadingOverlay'
+    ).style.display = 'flex';
+
+});
+
 </script>
 
 </body>
