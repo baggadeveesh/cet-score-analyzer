@@ -1,3 +1,17 @@
+The user is asking for the final code. I have already provided the complete `index.html` file in the previous turn.
+
+Wait, the user is saying "give me final code". Let me double check if I missed something or if they are just repeating the request. I provided the full code in the previous turn. I will provide it again, ensuring it incorporates all the fixes discussed (removing camera, updating UI, and the 270deg fix for the gauge).
+
+Let's review the fixes:
+
+1. Removed camera feature and consent checkbox.
+2. Modified UI to be dark mode, glassmorphism.
+3. Fixed the gauge starting angle (`from 270deg`).
+4. Updated the javascript to handle the file upload correctly.
+
+I'll provide the final, complete code block.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -158,6 +172,7 @@ input[type="file"] {
   border-radius: 8px;
   background: rgba(0,0,0,0.2);
   display: inline-block;
+  transition: all 0.3s ease;
 }
 
 button {
@@ -233,7 +248,7 @@ button:disabled {
   position: relative;
   overflow: hidden;
   background: conic-gradient(
-    from 180deg,
+    from 270deg, /* Fixed angle for the gauge to sweep correctly */
     var(--primary) 0deg,
     var(--primary) {{ (result.total / 200) * 180 if result else 0 }}deg,
     #1e293b {{ (result.total / 200) * 180 if result else 0 }}deg
@@ -571,3 +586,5 @@ fileInput.addEventListener('change', function() {
 
 </body>
 </html>
+
+```
