@@ -5,7 +5,6 @@ from flask import (
 )
 from bs4 import BeautifulSoup
 
-import os
 
 from datetime import datetime
 
@@ -123,24 +122,24 @@ def calculate_score(html_content):
             except:
                 pass
 
-    total = physics + chemistry + maths
+        total = physics + chemistry + maths
 
-if total >= 180:
-    percentile = 99.9
-elif total >= 160:
-    percentile = 99.0
-elif total >= 140:
-    percentile = 98.0
-elif total >= 120:
-    percentile = 96.0
-elif total >= 100:
-    percentile = 94.0
-elif total >= 80:
-    percentile = 90.0
-elif total >= 60:
-    percentile = 85.0
-else:
-    percentile = 80.0
+    if total >= 180:
+        percentile = 99.9
+    elif total >= 160:
+        percentile = 99.0
+    elif total >= 140:
+        percentile = 98.0
+    elif total >= 120:
+        percentile = 96.0
+    elif total >= 100:
+        percentile = 94.0
+    elif total >= 80:
+        percentile = 90.0
+    elif total >= 60:
+        percentile = 85.0
+    else:
+        percentile = 80.0
 
     attempted = correct_count + wrong_count
 
@@ -153,29 +152,28 @@ else:
             2
         )
 
-   return {
+    return {
 
-    "physics": physics,
+        "physics": physics,
 
-    "chemistry": chemistry,
+        "chemistry": chemistry,
 
-    "maths": maths,
+        "maths": maths,
 
-    "total": total,
+        "total": total,
 
-    "percentile": percentile,
+        "percentile": percentile,
 
-    "correct": correct_count,
+        "correct": correct_count,
 
-    "wrong": wrong_count,
+        "wrong": wrong_count,
 
-    "unattempted": unattempted,
+        "unattempted": unattempted,
 
-    "accuracy": accuracy,
+        "accuracy": accuracy,
 
-    "questions": questions
-}
-
+        "questions": questions
+    }
 
 @app.route("/", methods=["GET", "POST"])
 def index():
