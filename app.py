@@ -82,6 +82,8 @@ def calculate_score(html_content):
                 candidate = ''.join(filter(str.isdigit, candidate))
 
                 question_info = {
+                    "question": "",
+                    "options": []
                     "subject": current_subject,
                     "correct": correct,
                     "candidate": candidate,
