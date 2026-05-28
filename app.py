@@ -10,12 +10,15 @@ from bs4 import BeautifulSoup
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
-    Spacer
+    Spacer,
+    Image
 )
 
 from reportlab.lib.styles import getSampleStyleSheet
 
 from datetime import datetime
+
+import os
 
 app = Flask(__name__)
 
@@ -98,24 +101,36 @@ def calculate_score(html_content):
             correct = ""
             candidate = ""
 
-            answer_table = question_cell.find_all("table")
+            text = question_cell.get_text("\n")
 
-            for table in answer_table:
+            lines = [
+                x.strip()
+                for x in text.split("\n")
+                if x.strip()
+            ]
 
-                text = table.get_text(" ", strip=True)
+            for i, line in enumerate(lines):
 
-                if "Correct Option:" in text:
+                if "Correct Option:" in line:
 
-                    spans = table.find_all("span")
+                    if i + 1 < len(lines):
 
-                    if len(spans) >= 1:
                         correct = ''.join(
-                            filter(str.isdigit, spans[0].get_text())
+                            filter(
+                                str.isdigit,
+                                lines[i + 1]
+                            )
                         )
 
-                    if len(spans) >= 2:
+                if "Candidate Response:" in line:
+
+                    if i + 1 < len(lines):
+
                         candidate = ''.join(
-                            filter(str.isdigit, spans[1].get_text())
+                            filter(
+                                str.isdigit,
+                                lines[i + 1]
+                            )
                         )
 
             question_info = {
@@ -151,21 +166,23 @@ def calculate_score(html_content):
 
                 question_info["status"] = "correct"
 
-                if current_subject in ["PHY", "CHEM"]:
+                if current_subject == "PHY":
+
+                    physics += 1
 
                     question_info["marks"] = 1
 
-                    if current_subject == "PHY":
-                        physics += 1
+                elif current_subject == "CHEM":
 
-                    else:
-                        chemistry += 1
+                    chemistry += 1
+
+                    question_info["marks"] = 1
 
                 elif current_subject == "MATH":
 
-                    question_info["marks"] = 2
-
                     maths += 2
+
+                    question_info["marks"] = 2
 
             else:
 
@@ -182,7 +199,7 @@ def calculate_score(html_content):
 
     total = physics + chemistry + maths
 
-    # PERCENTILE ESTIMATION
+    # PERCENTILE
 
     if total >= 180:
         percentile = 99.9
@@ -207,6 +224,8 @@ def calculate_score(html_content):
 
     else:
         percentile = 80.0
+
+    # ACCURACY
 
     attempted = correct_count + wrong_count
 
@@ -332,9 +351,6 @@ def download_mistakes():
             Subject:
             {q['subject']}<br/><br/>
 
-            Question Image:
-            {q['question_image']}<br/><br/>
-
             Correct Answer:
             {q['correct']}<br/><br/>
 
@@ -343,13 +359,7 @@ def download_mistakes():
 
             Status:
             {status_text}<br/><br/>
-
-            Option Images:<br/>
             """
-
-            for opt in q["option_images"]:
-
-                text += f"{opt}<br/>"
 
             elements.append(
                 Paragraph(
@@ -357,6 +367,56 @@ def download_mistakes():
                     styles['BodyText']
                 )
             )
+
+            elements.append(
+                Spacer(1, 12)
+            )
+
+            # QUESTION IMAGE
+
+            try:
+
+                question_path = q["question_image"]
+
+                if question_path and os.path.exists(question_path):
+
+                    elements.append(
+                        Image(
+                            question_path,
+                            width=400,
+                            height=120
+                        )
+                    )
+
+                    elements.append(
+                        Spacer(1, 12)
+                    )
+
+            except:
+                pass
+
+            # OPTION IMAGES
+
+            for opt in q["option_images"]:
+
+                try:
+
+                    if os.path.exists(opt):
+
+                        elements.append(
+                            Image(
+                                opt,
+                                width=250,
+                                height=60
+                            )
+                        )
+
+                        elements.append(
+                            Spacer(1, 8)
+                        )
+
+                except:
+                    pass
 
             elements.append(
                 Spacer(1, 20)
