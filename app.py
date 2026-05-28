@@ -27,107 +27,140 @@ def calculate_score(html_content):
     soup = BeautifulSoup(html_content, "lxml")
 
     lines = soup.get_text("\n").splitlines()
+question_rows = soup.find_all("tr")
 
-    cleaned_lines = []
+for row in question_rows:
 
-    for line in lines:
+    try:
 
-        line = line.strip()
+        cols = row.find_all("td")
 
-        if line:
-            cleaned_lines.append(line)
+        if len(cols) < 3:
+            continue
 
-    physics = 0
-    chemistry = 0
-    maths = 0
+        question_id = cols[0].get_text(strip=True)
 
-    correct_count = 0
-    wrong_count = 0
-    unattempted = 0
+        subject = cols[1].get_text(strip=True).upper()
 
-    current_subject = ""
+        question_cell = cols[2]
 
-    questions = []
-
-    for i in range(len(cleaned_lines)):
-
-        line = cleaned_lines[i].upper()
-
-        if line == "PHYSICS":
+        if "PHYSICS" in subject:
             current_subject = "PHY"
 
-        elif line == "CHEMISTRY":
+        elif "CHEMISTRY" in subject:
             current_subject = "CHEM"
 
-        elif line == "MATHEMATICS":
+        elif "MATHEMATICS" in subject:
             current_subject = "MATH"
 
-        if cleaned_lines[i] == "Correct Option:":
+        # QUESTION IMAGE
 
-            try:
+        question_img = question_cell.find(
+            "img",
+            src=lambda x: x and "Q_" in x
+        )
 
-                correct = cleaned_lines[i + 1]
+        question_image = (
+            question_img["src"]
+            if question_img else ""
+        )
 
-                candidate = ""
+        # OPTION IMAGES
 
-                for j in range(i + 1, min(i + 6, len(cleaned_lines))):
+        option_imgs = question_cell.find_all(
+            "img",
+            src=lambda x: x and "O_" in x
+        )
 
-                    if cleaned_lines[j] == "Candidate Response:":
+        option_images = [
+            img["src"]
+            for img in option_imgs
+        ]
 
-                        candidate = cleaned_lines[j + 1]
+        # ANSWERS
 
-                        break
+        correct = ""
+        candidate = ""
 
-                correct = ''.join(filter(str.isdigit, correct))
-                candidate = ''.join(filter(str.isdigit, candidate))
+        text = question_cell.get_text("\n")
 
-                question_info = {
-                    "question": "",
-                    "options": []
-                    "subject": current_subject,
-                    "correct": correct,
-                    "candidate": candidate,
-                    "status": "",
-                    "marks": 0
-                }
+        lines = [
+            x.strip()
+            for x in text.split("\n")
+            if x.strip()
+        ]
 
-                if candidate == "":
+        for i, line in enumerate(lines):
 
-                    unattempted += 1
+            if "Correct Option:" in line:
+                correct = ''.join(
+                    filter(str.isdigit, lines[i + 1])
+                )
 
-                    question_info["status"] = "unattempted"
+            if "Candidate Response:" in line:
 
-                elif correct == candidate:
+                if i + 1 < len(lines):
 
-                    correct_count += 1
+                    candidate = ''.join(
+                        filter(str.isdigit, lines[i + 1])
+                    )
 
-                    question_info["status"] = "correct"
+        question_info = {
 
-                    if current_subject == "PHY":
+            "question_id": question_id,
 
-                        physics += 1
+            "subject": current_subject,
 
-                        question_info["marks"] = 1
+            "question_image": question_image,
 
-                    elif current_subject == "CHEM":
+            "option_images": option_images,
 
-                        chemistry += 1
+            "correct": correct,
 
-                        question_info["marks"] = 1
+            "candidate": candidate,
 
-                    elif current_subject == "MATH":
+            "status": "",
 
-                        maths += 2
+            "marks": 0
+        }
 
-                        question_info["marks"] = 2
+        if candidate == "":
 
-                else:
+            unattempted += 1
 
-                    wrong_count += 1
+            question_info["status"] = "unattempted"
 
-                    question_info["status"] = "wrong"
+        elif correct == candidate:
 
-                questions.append(question_info)
+            correct_count += 1
+
+            question_info["status"] = "correct"
+
+            if current_subject == "PHY":
+
+                physics += 1
+                question_info["marks"] = 1
+
+            elif current_subject == "CHEM":
+
+                chemistry += 1
+                question_info["marks"] = 1
+
+            elif current_subject == "MATH":
+
+                maths += 2
+                question_info["marks"] = 2
+
+        else:
+
+            wrong_count += 1
+
+            question_info["status"] = "wrong"
+
+        questions.append(question_info)
+
+    except:
+        pass
 
             except:
                 pass
@@ -269,21 +302,33 @@ def download_mistakes():
                 else "Unattempted"
             )
 
-            text = f"""
-            <b>Question {i}</b><br/><br/>
+           text = f"""
+<b>Question {i}</b><br/><br/>
 
-            Subject:
-            {q['subject']}<br/><br/>
+Question ID:
+{q['question_id']}<br/><br/>
 
-            Correct Answer:
-            {q['correct']}<br/><br/>
+Subject:
+{q['subject']}<br/><br/>
 
-            Your Answer:
-            {your_answer}<br/><br/>
+Question Image:
+{q['question_image']}<br/><br/>
 
-            Status:
-            {status_text}<br/><br/>
-            """
+Correct Answer:
+{q['correct']}<br/><br/>
+
+Your Answer:
+{your_answer}<br/><br/>
+
+Status:
+{status_text}<br/><br/>
+
+Option Images:<br/>
+"""
+
+for opt in q["option_images"]:
+
+    text += f"{opt}<br/>"
 
             elements.append(
                 Paragraph(
