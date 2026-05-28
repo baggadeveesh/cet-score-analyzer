@@ -4,6 +4,9 @@ from flask import (
     request,
     send_file
 )
+
+from bs4 import BeautifulSoup
+
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -11,176 +14,197 @@ from reportlab.platypus import (
 )
 
 from reportlab.lib.styles import getSampleStyleSheet
-from bs4 import BeautifulSoup
-
 
 from datetime import datetime
 
 app = Flask(__name__)
-latest_result = None
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+latest_result = None
+
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 
 def calculate_score(html_content):
 
     soup = BeautifulSoup(html_content, "lxml")
 
-    lines = soup.get_text("\n").splitlines()
-question_rows = soup.find_all("tr")
+    physics = 0
+    chemistry = 0
+    maths = 0
 
-for row in question_rows:
+    correct_count = 0
+    wrong_count = 0
+    unattempted = 0
 
-    try:
+    questions = []
 
-        cols = row.find_all("td")
+    question_rows = soup.find_all("tr")
 
-        if len(cols) < 3:
-            continue
+    for row in question_rows:
 
-        question_id = cols[0].get_text(strip=True)
+        try:
 
-        subject = cols[1].get_text(strip=True).upper()
+            cols = row.find_all("td")
 
-        question_cell = cols[2]
+            if len(cols) < 3:
+                continue
 
-        if "PHYSICS" in subject:
-            current_subject = "PHY"
+            question_id = cols[0].get_text(strip=True)
 
-        elif "CHEMISTRY" in subject:
-            current_subject = "CHEM"
+            subject = cols[1].get_text(strip=True).upper()
 
-        elif "MATHEMATICS" in subject:
-            current_subject = "MATH"
+            question_cell = cols[2]
 
-        # QUESTION IMAGE
+            current_subject = ""
 
-        question_img = question_cell.find(
-            "img",
-            src=lambda x: x and "Q_" in x
-        )
+            if "PHYSICS" in subject:
+                current_subject = "PHY"
 
-        question_image = (
-            question_img["src"]
-            if question_img else ""
-        )
+            elif "CHEMISTRY" in subject:
+                current_subject = "CHEM"
 
-        # OPTION IMAGES
+            elif "MATHEMATICS" in subject:
+                current_subject = "MATH"
 
-        option_imgs = question_cell.find_all(
-            "img",
-            src=lambda x: x and "O_" in x
-        )
+            else:
+                continue
 
-        option_images = [
-            img["src"]
-            for img in option_imgs
-        ]
+            # QUESTION IMAGE
 
-        # ANSWERS
+            question_img = question_cell.find(
+                "img",
+                src=lambda x: x and "Q_" in x
+            )
 
-        correct = ""
-        candidate = ""
+            question_image = (
+                question_img["src"]
+                if question_img else ""
+            )
 
-        text = question_cell.get_text("\n")
+            # OPTION IMAGES
 
-        lines = [
-            x.strip()
-            for x in text.split("\n")
-            if x.strip()
-        ]
+            option_imgs = question_cell.find_all(
+                "img",
+                src=lambda x: x and "O_" in x
+            )
 
-        for i, line in enumerate(lines):
+            option_images = [
+                img["src"]
+                for img in option_imgs
+            ]
 
-            if "Correct Option:" in line:
-                correct = ''.join(
-                    filter(str.isdigit, lines[i + 1])
-                )
+            # ANSWERS
 
-            if "Candidate Response:" in line:
+            correct = ""
+            candidate = ""
 
-                if i + 1 < len(lines):
+            answer_table = question_cell.find_all("table")
 
-                    candidate = ''.join(
-                        filter(str.isdigit, lines[i + 1])
-                    )
+            for table in answer_table:
 
-        question_info = {
+                text = table.get_text(" ", strip=True)
 
-            "question_id": question_id,
+                if "Correct Option:" in text:
 
-            "subject": current_subject,
+                    spans = table.find_all("span")
 
-            "question_image": question_image,
+                    if len(spans) >= 1:
+                        correct = ''.join(
+                            filter(str.isdigit, spans[0].get_text())
+                        )
 
-            "option_images": option_images,
+                    if len(spans) >= 2:
+                        candidate = ''.join(
+                            filter(str.isdigit, spans[1].get_text())
+                        )
 
-            "correct": correct,
+            question_info = {
 
-            "candidate": candidate,
+                "question_id": question_id,
 
-            "status": "",
+                "subject": current_subject,
 
-            "marks": 0
-        }
+                "question_image": question_image,
 
-        if candidate == "":
+                "option_images": option_images,
 
-            unattempted += 1
+                "correct": correct,
 
-            question_info["status"] = "unattempted"
+                "candidate": candidate,
 
-        elif correct == candidate:
+                "status": "",
 
-            correct_count += 1
+                "marks": 0
+            }
 
-            question_info["status"] = "correct"
+            # STATUS
 
-            if current_subject == "PHY":
+            if candidate == "":
 
-                physics += 1
-                question_info["marks"] = 1
+                unattempted += 1
 
-            elif current_subject == "CHEM":
+                question_info["status"] = "unattempted"
 
-                chemistry += 1
-                question_info["marks"] = 1
+            elif correct == candidate:
 
-            elif current_subject == "MATH":
+                correct_count += 1
 
-                maths += 2
-                question_info["marks"] = 2
+                question_info["status"] = "correct"
 
-        else:
+                if current_subject in ["PHY", "CHEM"]:
 
-            wrong_count += 1
+                    question_info["marks"] = 1
 
-            question_info["status"] = "wrong"
+                    if current_subject == "PHY":
+                        physics += 1
 
-        questions.append(question_info)
+                    else:
+                        chemistry += 1
 
-    except:
-        pass
+                elif current_subject == "MATH":
 
-            except:
-                pass
+                    question_info["marks"] = 2
 
-        total = physics + chemistry + maths
+                    maths += 2
+
+            else:
+
+                wrong_count += 1
+
+                question_info["status"] = "wrong"
+
+            questions.append(question_info)
+
+        except:
+            pass
+
+    # TOTAL
+
+    total = physics + chemistry + maths
+
+    # PERCENTILE ESTIMATION
 
     if total >= 180:
         percentile = 99.9
+
     elif total >= 160:
         percentile = 99.0
+
     elif total >= 140:
         percentile = 98.0
+
     elif total >= 120:
         percentile = 96.0
+
     elif total >= 100:
         percentile = 94.0
+
     elif total >= 80:
         percentile = 90.0
+
     elif total >= 60:
         percentile = 85.0
+
     else:
         percentile = 80.0
 
@@ -218,15 +242,15 @@ for row in question_rows:
         "questions": questions
     }
 
+
 @app.route("/", methods=["GET", "POST"])
 def index():
+
+    global latest_result
 
     result = None
 
     if request.method == "POST":
-
-        
-        # SAVE USER IP
 
         try:
 
@@ -241,21 +265,18 @@ def index():
         except:
             pass
 
-        # SCORE CALCULATION
-
         file = request.files["htmlfile"]
 
         html_content = file.read()
 
         result = calculate_score(html_content)
-        global latest_result
-latest_result = result
+
+        latest_result = result
 
     return render_template(
         "index.html",
         result=result
     )
-
 
 
 @app.route("/download-mistakes")
@@ -302,33 +323,33 @@ def download_mistakes():
                 else "Unattempted"
             )
 
-           text = f"""
-<b>Question {i}</b><br/><br/>
+            text = f"""
+            <b>Question {i}</b><br/><br/>
 
-Question ID:
-{q['question_id']}<br/><br/>
+            Question ID:
+            {q['question_id']}<br/><br/>
 
-Subject:
-{q['subject']}<br/><br/>
+            Subject:
+            {q['subject']}<br/><br/>
 
-Question Image:
-{q['question_image']}<br/><br/>
+            Question Image:
+            {q['question_image']}<br/><br/>
 
-Correct Answer:
-{q['correct']}<br/><br/>
+            Correct Answer:
+            {q['correct']}<br/><br/>
 
-Your Answer:
-{your_answer}<br/><br/>
+            Your Answer:
+            {your_answer}<br/><br/>
 
-Status:
-{status_text}<br/><br/>
+            Status:
+            {status_text}<br/><br/>
 
-Option Images:<br/>
-"""
+            Option Images:<br/>
+            """
 
-for opt in q["option_images"]:
+            for opt in q["option_images"]:
 
-    text += f"{opt}<br/>"
+                text += f"{opt}<br/>"
 
             elements.append(
                 Paragraph(
@@ -347,6 +368,8 @@ for opt in q["option_images"]:
         filename,
         as_attachment=True
     )
+
+
 if __name__ == "__main__":
 
     app.run(debug=True)
