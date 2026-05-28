@@ -1,15 +1,23 @@
 from flask import (
     Flask,
     render_template,
-    request
+    request,
+    send_file
 )
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib.styles import getSampleStyleSheet
 from bs4 import BeautifulSoup
 
 
 from datetime import datetime
 
 app = Flask(__name__)
-
+latest_result = None
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 
@@ -205,6 +213,8 @@ def index():
         html_content = file.read()
 
         result = calculate_score(html_content)
+        global latest_result
+latest_result = result
 
     return render_template(
         "index.html",
@@ -213,7 +223,83 @@ def index():
 
 
 
+@app.route("/download-mistakes")
+def download_mistakes():
 
+    global latest_result
+
+    if not latest_result:
+        return "No analysis found"
+
+    filename = "mistakes_report.pdf"
+
+    doc = SimpleDocTemplate(filename)
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    title = Paragraph(
+        "MHT CET Wrong / Unattempted Questions",
+        styles['Title']
+    )
+
+    elements.append(title)
+
+    elements.append(Spacer(1, 20))
+
+    for i, q in enumerate(
+        latest_result["questions"],
+        start=1
+    ):
+
+        if q["status"] != "correct":
+
+            your_answer = (
+                q["candidate"]
+                if q["candidate"]
+                else "Not Attempted"
+            )
+
+            status_text = (
+                "Wrong"
+                if q["status"] == "wrong"
+                else "Unattempted"
+            )
+
+            text = f"""
+            <b>Question {i}</b><br/><br/>
+
+            Subject:
+            {q['subject']}<br/><br/>
+
+            Correct Answer:
+            {q['correct']}<br/><br/>
+
+            Your Answer:
+            {your_answer}<br/><br/>
+
+            Status:
+            {status_text}<br/><br/>
+            """
+
+            elements.append(
+                Paragraph(
+                    text,
+                    styles['BodyText']
+                )
+            )
+
+            elements.append(
+                Spacer(1, 20)
+            )
+
+    doc.build(elements)
+
+    return send_file(
+        filename,
+        as_attachment=True
+    )
 if __name__ == "__main__":
 
     app.run(debug=True)
